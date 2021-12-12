@@ -23,7 +23,7 @@ func NewMySQLOmzetRepository(db *sql.DB) OmzetRepository {
 }
 
 func (m *mysqlOmzetRepository) GetMerchantOmzet(merchantId int, limit int, offset int) (map[string]interface{}, error) {
-	rows, err := m.db.Query("SELECT SUM(Transactions.bill_total), Transactions.created_at FROM Merchants JOIN Transactions ON Merchants.id=Transactions.merchant_id WHERE Transactions.merchant_id=? GROUP BY DATE(Transactions.`created_at`) LIMIT ? OFFSET ?", merchantId, limit, offset)
+	rows, err := m.db.Query("SELECT SUM(bill_total), created_at FROM Transactions WHERE merchant_id=? GROUP BY DATE(created_at) LIMIT ? OFFSET ?", merchantId, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func (m *mysqlOmzetRepository) GetMerchantOmzet(merchantId int, limit int, offse
 }
 
 func (m *mysqlOmzetRepository) GetOutletOmzet(outletId int, limit int, offset int) (map[string]interface{}, error) {
-	rows, err := m.db.Query("SELECT SUM(Transactions.bill_total), Transactions.created_at FROM Merchants JOIN Outlets ON Merchants.id=Outlets.merchant_id JOIN Transactions ON Outlets.id=Transactions.outlet_id WHERE Transactions.outlet_id=? GROUP BY DATE(Transactions.`created_at`), Outlets.id LIMIT ? OFFSET ?", outletId, limit, offset)
+	rows, err := m.db.Query("SELECT SUM(bill_total), created_at FROM Transactions WHERE outlet_id=? GROUP BY DATE(created_at), outlet_id LIMIT ? OFFSET ?", outletId, limit, offset)
 	if err != nil {
 		return nil, err
 	}
@@ -85,7 +85,7 @@ func (m *mysqlOmzetRepository) GetOutletOmzet(outletId int, limit int, offset in
 }
 
 func (m *mysqlOmzetRepository) GetMerchantName(merchantId int) (string, error) {
-	row := m.db.QueryRow("SELECT Merchants.merchant_name FROM Merchants WHERE id=?", merchantId)
+	row := m.db.QueryRow("SELECT merchant_name FROM Merchants WHERE id=?", merchantId)
 	var merchantName string
 	err := row.Scan(&merchantName)
 	if err != nil {
